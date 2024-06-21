@@ -1,14 +1,11 @@
 # Solution of Advent of Code 2023 (https://adventofcode.com/2023/)
 # Author: Monika Rosinska
-# Date: 19. 6. 2024
+# Date: 21. 6. 2023 [19. 6. 2024]
 
 # The instructions for the tasks are simplified. For the whole assignment please visit the site, as it is not allowed to
 #   copy parts of the event. The same applies to input examples.
 
-import numpy as np
 import regex as re
-from typing import Dict, List
-from functools import reduce
 
 
 # ####################### TASK 1 A #######################
@@ -230,7 +227,7 @@ def get_star_numbers(star_idx, text):
     return list(star_numbers)
 
 
-def task_03_a():
+def task_03_b():
     prev_previous_line = ""
     previous_line = ""
     total_sum = 0
@@ -239,7 +236,7 @@ def task_03_a():
         previous_line = file.readline().strip()  # get first line and store it as previous line
 
         for line_idx, line in enumerate(file, start=2):
-            star_idxs = [match.start() for match in re.finditer(r'\*', previous_line)] # get stars in previous line
+            star_idxs = [match.start() for match in re.finditer(r'\*', previous_line)]  # get stars in previous line
 
             # the stars in previous line are considered; prev_previous_line is line above the stars, current line
             #   is line under the stars
@@ -268,5 +265,67 @@ def task_03_a():
 
         print(f"The sum of products of gears is {total_sum}.")
 
-task_03_a()
 
+# ####################### TASK 4 A #######################
+# Task: In each line, you have two sets of numbers split by '|'. Compare these sets. For the first matched number,
+#   count one point. For each other match you double the points you have in this line.
+#   What is the sum of points of all lines?
+
+def task_04_a():
+    total_sum = 0
+    number_regex_pattern = re.compile(r'\d+')
+
+    with open("inputs/input_04.txt", 'r') as file:
+        for line in file:
+            line = line.split(": ")[1]  # get rid of the "Game x: " prefix
+            parts = line.split('|')
+            winning_numbers = number_regex_pattern.findall(parts[0])
+            ticket_numbers = number_regex_pattern.findall(parts[1])
+
+            matched_numbers = set(winning_numbers) & set(ticket_numbers)
+            if matched_numbers:
+                total_sum += 2 ** (len(matched_numbers) - 1)
+
+    print(f"The points obtained in the tickets is {total_sum}.")
+
+
+# ####################### TASK 4 B #######################
+
+# updates count of card copies
+# cards - dictionary of the cards
+# card_index - index of the card which count is being updated
+# count - number of copies to be added
+def add_copies(cards, card_index, count):
+    if card_index in cards:
+        cards[card_index] += count
+    else:
+        cards[card_index] = count
+
+
+def task_04_b():
+    cards = {}
+    total_cards = 0
+    number_regex_pattern = re.compile(r'\d+')
+
+    with open("inputs/input_04.txt", 'r') as file:
+        for line_idx, line in enumerate(file):
+            card_index = line_idx + 1
+            add_copies(cards, card_index, 1)
+
+            line = line.split(": ")[1]  # get rid of the "Game x: " prefix
+            parts = line.split('|')
+
+            winning_numbers = number_regex_pattern.findall(parts[0])
+            ticket_numbers = number_regex_pattern.findall(parts[1])
+            matched_numbers = set(winning_numbers) & set(ticket_numbers)
+
+            current_card_count = cards[card_index]
+            for i in range(1, len(matched_numbers) + 1):
+                add_copies(cards, card_index + i, current_card_count)
+
+            total_cards += current_card_count
+
+    print(f"Total count of cards is {total_cards}.")
+
+
+task_04_b()
